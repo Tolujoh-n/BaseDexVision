@@ -102,6 +102,7 @@ const dummyMemes: Campaign[] = [
 export default function Page() {
   const router = useRouter();
   const account = useAccount();
+  const [isSending, setIsSending] = useState(false);
   const walletAddress = account.addresses?.[0];
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
@@ -243,15 +244,29 @@ export default function Page() {
 
               <div className="flex justify-between">
                 <button
-                  onClick={async () =>
-                    sendTransactionAsync({
-                      to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
-                      value: parseEther(form.amount || "0"),
-                    })
-                  }
-                  className="bg-green-600 text-white px-3 py-1 rounded"
+                  disabled={isSending}
+                  onClick={async () => {
+                    try {
+                      setIsSending(true);
+                      await sendTransactionAsync({
+                        to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+                        value: parseEther(form.amount || "0"),
+                      });
+                      setForm({ amount: "" }); // Clear input on success
+                    } catch (error) {
+                      console.error("Transaction failed:", error);
+                      toast.error("Transaction failed. Please try again.");
+                    } finally {
+                      setIsSending(false);
+                    }
+                  }}
+                  className={`${
+                    isSending
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-green-600"
+                  } text-white px-3 py-1 rounded`}
                 >
-                  Send ETH
+                  {isSending ? "Sending..." : "Send ETH"}
                 </button>
               </div>
 
@@ -268,7 +283,7 @@ export default function Page() {
                         navigator.clipboard.writeText(data);
                         toast.success("Copied to clipboard!");
                       }}
-                      className="ml-2 text-sm text-blue-400 hover:underline"
+                      className="ml-2 w-10 h-10 flex items-center justify-center bg-gray-500 text-white rounded-full text-lg hover:bg-gray-600 transition"
                     >
                       📋
                     </button>
