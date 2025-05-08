@@ -4,6 +4,7 @@ import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Toaster, toast } from "sonner";
+import { useBalance } from "wagmi";
 
 import { parseEther } from "viem";
 import {
@@ -104,6 +105,9 @@ export default function Page() {
   const account = useAccount();
   const [isSending, setIsSending] = useState(false);
   const walletAddress = account.addresses?.[0];
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance({
+    address: walletAddress,
+  });
   const { connectors, connect, status, error } = useConnect();
   const { disconnect } = useDisconnect();
   const { sendTransactionAsync, data } = useSendTransaction();
@@ -127,7 +131,15 @@ export default function Page() {
         <div className="flex items-center space-x-4">
           {account.status === "connected" ? (
             <div className="flex items-center space-x-4">
-              <p className="text-green-600">
+              <p className="text-green-400">
+                Balance(Main):{" "}
+                {isBalanceLoading
+                  ? "Loading..."
+                  : balanceData
+                    ? `${parseFloat(balanceData.formatted).toFixed(4)} ${balanceData.symbol}`
+                    : "N/A"}
+              </p>
+              <p className="text-white">
                 {truncateAddress(walletAddress || "")}
               </p>
               <button
