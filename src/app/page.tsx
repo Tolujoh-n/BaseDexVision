@@ -3,6 +3,8 @@
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Toaster, toast } from "sonner";
+
 import { parseEther } from "viem";
 import {
   useAccount,
@@ -12,6 +14,15 @@ import {
   useSignMessage,
 } from "wagmi";
 import Image from "next/image";
+import type { StaticImageData } from "next/image";
+
+type Campaign = {
+  id: string;
+  name: string;
+  description: string;
+  target: string;
+  image: StaticImageData;
+};
 
 import aaa from "../assets/caaa.webp";
 import bbb from "../assets/cbbb.webp";
@@ -22,10 +33,7 @@ import fff from "../assets/cfff.jpg";
 import ggg from "../assets/cggg.webp";
 import hhh from "../assets/chhh.webp";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import doge from "../assets/iii.jpg";
-
-const dummyMemes = [
+const dummyMemes: Campaign[] = [
   {
     id: "1",
     name: "REAL Change for Climate and Nature",
@@ -99,9 +107,11 @@ export default function Page() {
   const { disconnect } = useDisconnect();
   const { sendTransactionAsync, data } = useSendTransaction();
   const { signMessage, data: signData } = useSignMessage();
-
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
   const [isFundOpen, setIsFundOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "" });
+  const [form, setForm] = useState({ amount: "" });
 
   function truncateAddress(walletAddress: string, chars = 4) {
     return `${walletAddress.slice(0, chars + 2)}...${walletAddress.slice(-chars)}`;
@@ -150,7 +160,7 @@ export default function Page() {
 
           <button
             className="bg-green-600 text-white px-4 py-2 rounded"
-            onClick={() => setIsFundOpen(true)}
+            onClick={() => toast.info("Feature coming soon!")}
           >
             Create Campaign
           </button>
@@ -164,7 +174,6 @@ export default function Page() {
             <div
               key={m.id}
               className="bg-gray-800 rounded p-2 cursor-pointer hover:scale-105 transition"
-              onClick={() => router.push(`/memes/${m.id}`)}
             >
               <Image
                 src={m.image}
@@ -180,7 +189,10 @@ export default function Page() {
                   <b>Target:</b> {m.target}
                 </p>
                 <button
-                  onClick={() => setIsFundOpen(true)}
+                  onClick={() => {
+                    setSelectedCampaign(m);
+                    setIsFundOpen(true);
+                  }}
                   className="flex-1 bg-blue-600 py-2 rounded text-sm font-semibold"
                 >
                   Donate
@@ -190,7 +202,7 @@ export default function Page() {
           ))}
         </div>
 
-        {isFundOpen && (
+        {isFundOpen && selectedCampaign && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-gray-900 text-white p-6 border border-gray-300 rounded  w-full ml-2 mr-2 max-w-md">
               <button
@@ -202,7 +214,7 @@ export default function Page() {
               </button>
               <div className="w-full h-60 border border-dashed border-gray-500 flex items-center justify-center rounded mb-4 relative">
                 <Image
-                  src={aaa}
+                  src={selectedCampaign?.image || aaa}
                   alt="Generated Meme"
                   className="w-full h-full object-cover rounded"
                   width={500}
@@ -211,23 +223,34 @@ export default function Page() {
               </div>
 
               <h2 className="text-xl font-bold mb-4">
-                Croundfund Project Title
+                {selectedCampaign?.name}
               </h2>
 
-              <p>
-                Just use a simple local state or save campaign data on-chain.
-                Smart Contract: Minimal crowdfunding contract.
+              <p>{selectedCampaign?.description}</p>
+              <br />
+
+              <p className="text-sm">
+                <b>Target:</b> {selectedCampaign?.target}
               </p>
+
               <input
                 type="text"
                 placeholder="Amount to Donate (in ETH)"
                 className="w-full bg-white text-black border px-2 py-1 mb-2 rounded-sm"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                value={form.amount}
+                onChange={(e) => setForm({ ...form, amount: e.target.value })}
               />
 
               <div className="flex justify-between">
-                <button className="bg-green-600 text-white px-3 py-1 rounded">
+                <button
+                  onClick={async () =>
+                    sendTransactionAsync({
+                      to: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
+                      value: parseEther(form.amount || "0"),
+                    })
+                  }
+                  className="bg-green-600 text-white px-3 py-1 rounded"
+                >
                   Send ETH
                 </button>
               </div>
@@ -235,7 +258,22 @@ export default function Page() {
               <p>
                 {" "}
                 <b>{data && "Transaction sent successfully! 🎉"}</b>{" "}
-                <span>{data}</span>
+                {data && (
+                  <div className="flex items-center mt-2">
+                    <span className="truncate max-w-xs overflow-hidden break-all">
+                      {data}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(data);
+                        toast.success("Copied to clipboard!");
+                      }}
+                      className="ml-2 text-sm text-blue-400 hover:underline"
+                    >
+                      📋
+                    </button>
+                  </div>
+                )}
               </p>
 
               <div className="flex justify-between">
@@ -252,6 +290,7 @@ export default function Page() {
           </div>
         )}
       </main>
+      <Toaster position="top-center" />
 
       <footer className="text-center text-gray-500 mt-8 mb-8">
         BUILT ON BASE
