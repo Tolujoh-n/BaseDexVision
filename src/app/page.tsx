@@ -13,27 +13,82 @@ import {
 } from "wagmi";
 import Image from "next/image";
 
-import aaa from "../assets/aaa.jpg";
-import bbb from "../assets/bbb.jpg";
-import ccc from "../assets/ccc.jpg";
-import ddd from "../assets/ddd.jpg";
-import eee from "../assets/eee.jpg";
-import fff from "../assets/fff.jpg";
-import ggg from "../assets/ggg.png";
-import hhh from "../assets/hhh.jpg";
+import aaa from "../assets/caaa.webp";
+import bbb from "../assets/cbbb.webp";
+import ccc from "../assets/cddd.jpg";
+import ddd from "../assets/cccc.webp";
+import eee from "../assets/ceee.webp";
+import fff from "../assets/cfff.jpg";
+import ggg from "../assets/cggg.webp";
+import hhh from "../assets/chhh.webp";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import doge from "../assets/iii.jpg";
 
 const dummyMemes = [
-  { id: "1", name: "NebulaBit", image: aaa },
-  { id: "2", name: "QuantumPaw", image: bbb },
-  { id: "3", name: "EchoSphere", image: ccc },
-  { id: "4", name: "ZenithChain", image: ddd },
-  { id: "5", name: "SolisToken", image: eee },
-  { id: "6", name: "AetherSwap", image: fff },
-  { id: "7", name: "NimbusByte", image: ggg },
-  { id: "8", name: "VertexPay", image: hhh },
+  {
+    id: "1",
+    name: "REAL Change for Climate and Nature",
+    description:
+      "Things CAN get better. Will you help us call for the REAL change we need for climate, nature.",
+    target: "6 ETH",
+    image: aaa,
+  },
+  {
+    id: "2",
+    name: "Just a little something",
+    description:
+      "I'm raising money to help give my daughter a treat after a stressful time going up against the FA",
+    target: "5 ETH",
+    image: bbb,
+  },
+  {
+    id: "3",
+    name: "Y Bont needs your help",
+    description:
+      "Y Bont is the only specialist Day Nursery facility for children under 5yrs with Disabilities.",
+    target: "4 ETH",
+    image: ccc,
+  },
+  {
+    id: "4",
+    name: "Audrey support fund",
+    description:
+      "We’re raising money to support Audrey during and after imprisonment",
+    target: "7 ETH",
+    image: ddd,
+  },
+  {
+    id: "5",
+    name: "The Rape Gang Inquiry",
+    description:
+      "What happened, how did it happen, why was it allowed to happen?",
+    target: "3.5 ETH",
+    image: eee,
+  },
+  {
+    id: "6",
+    name: "Keep on Growing",
+    description:
+      "Our aim is to grow food and community in planet positive ways. We desperately need an injection etc",
+    target: "2 ETH",
+    image: fff,
+  },
+  {
+    id: "7",
+    name: "The White Mannie Memorial Repairs",
+    description:
+      "The beloved Mannie Statue, a symbol of our coastal community’s resilience, now needs urgent",
+    target: "10 ETH",
+    image: ggg,
+  },
+  {
+    id: "8",
+    name: "Wishaw Cameras",
+    description: "Raise £1,250 to fund 6 cameras and accessories for Wishaw.",
+    target: "12 ETH",
+    image: hhh,
+  },
 ];
 
 export default function Page() {
@@ -116,14 +171,13 @@ export default function Page() {
                 alt={m.name}
                 className="rounded w-full h-48 object-cover"
               />
-              <h3 className="mt-2 text-xl md:text-2xl font-bold">{m.name}</h3>
+              <h3 className="mt-2 text-l md:text-l font-bold">{m.name}</h3>
               <p className="text-sm md:text-base text-gray-300">
-                Just use a simple local state or save campaign data on-chain.
-                Smart Contract: Minimal crowdfunding contract.
+                {m.description}
               </p>
               <div className="flex gap-2 mt-4 items-center">
                 <p className="text-sm">
-                  <b>Target:</b> 5 ETH
+                  <b>Target:</b> {m.target}
                 </p>
                 <button
                   onClick={() => setIsFundOpen(true)}
@@ -178,8 +232,11 @@ export default function Page() {
                 </button>
               </div>
 
-              <p> <b>{data && "Transaction sent successfully! 🎉"}</b>{" "}
-              <span>{data}</span></p>
+              <p>
+                {" "}
+                <b>{data && "Transaction sent successfully! 🎉"}</b>{" "}
+                <span>{data}</span>
+              </p>
 
               <div className="flex justify-between">
                 <p></p>
