@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Wallet, Plus, ArrowRightLeft, ShoppingCart, Send } from "lucide-react";
 import { useAccount, useWriteContract, useSwitchChain } from "wagmi";
 import { getCoinsMostValuable } from "@zoralabs/coins-sdk";
+import { getConfig } from "@/wagmi";
 import { deployContract } from "wagmi/actions";
 
 const COVALENT_API_KEY = "ckey_demo"; // Replace with your Covalent API key for production
@@ -116,7 +117,7 @@ export default function Portfolio() {
       }
       await switchChainAsync({ chainId: BASE_SEPOLIA_CHAIN_ID });
       const initialSupply = BigInt(createForm.supply) * 10n ** 18n; // 18 decimals
-      const tx = await deployContract({
+      const tx = await deployContract(getConfig(), {
         abi: ERC20_ABI,
         bytecode: ERC20_BYTECODE,
         args: [createForm.name, createForm.symbol, initialSupply],
