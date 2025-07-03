@@ -40,7 +40,10 @@ export default function Sidebar() {
             />
           </svg>
         </button>
-        <span className="text-white text-xl font-bold">BaseDexVision</span>
+        {/* Only show title if sidebar is not open */}
+        {!sidebarOpen && (
+          <span className="text-white text-xl font-bold">BaseDexVision</span>
+        )}
         <div />
       </div>
       {/* Mobile Sidebar Overlay */}
@@ -50,7 +53,7 @@ export default function Sidebar() {
             className="absolute inset-0 bg-black bg-opacity-60"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="relative w-64 h-full bg-gray-900 border-r border-gray-800 flex flex-col shadow-xl z-50 animate-slideInLeft">
+          <aside className="relative w-full max-w-xs h-full bg-gray-900 border-r border-gray-800 flex flex-col shadow-xl z-50 animate-slideInLeft">
             <div className="h-20 flex items-center justify-between px-6 text-2xl font-bold border-b border-gray-800">
               <span className="text-white">BaseDexVision</span>
               <button

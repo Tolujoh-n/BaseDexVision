@@ -50,26 +50,52 @@ export default function TokenDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isWatched, setIsWatched] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertPrice, setAlertPrice] = useState("");
+  const [alerts, setAlerts] = useState<number[]>([]);
 
   // Sync watchlist state
   useEffect(() => {
     if (!id) return;
     const stored = localStorage.getItem("bdv_watchlist");
     const list = stored ? JSON.parse(stored) : [];
-    setIsWatched(list.includes(id));
+    setIsWatched(list.includes(String(id).toLowerCase()));
   }, [id]);
+
+  // Sync alerts state
+  useEffect(() => {
+    if (!id) return;
+    const stored = localStorage.getItem(
+      `bdv_alerts_${String(id).toLowerCase()}`
+    );
+    setAlerts(stored ? JSON.parse(stored) : []);
+  }, [id, showAlertModal]);
 
   // Add/remove from watchlist
   function toggleWatchlist() {
     const stored = localStorage.getItem("bdv_watchlist");
     let list = stored ? JSON.parse(stored) : [];
+    const addr = String(id).toLowerCase();
     if (isWatched) {
-      list = list.filter((pid: string) => pid !== id);
+      list = list.filter((pid: string) => pid !== addr);
     } else {
-      list.push(id);
+      list.push(addr);
     }
     localStorage.setItem("bdv_watchlist", JSON.stringify(list));
     setIsWatched(!isWatched);
+  }
+
+  // Add price alert
+  function addAlert(e: any) {
+    e.preventDefault();
+    if (!alertPrice) return;
+    const addr = String(id).toLowerCase();
+    const stored = localStorage.getItem(`bdv_alerts_${addr}`);
+    let list = stored ? JSON.parse(stored) : [];
+    list.push(Number(alertPrice));
+    localStorage.setItem(`bdv_alerts_${addr}`, JSON.stringify(list));
+    setAlertPrice("");
+    setShowAlertModal(false);
   }
 
   useEffect(() => {
@@ -194,7 +220,10 @@ export default function TokenDetails() {
                       <Star size={16} />{" "}
                       {isWatched ? "Remove from Watchlist" : "Add to Watchlist"}
                     </button>
-                    <button className="flex items-center gap-1 px-3 py-1 bg-gray-800 text-gray-200 rounded hover:bg-gray-700 text-sm">
+                    <button
+                      className="flex items-center gap-1 px-3 py-1 bg-gray-800 text-gray-200 rounded hover:bg-gray-700 text-sm"
+                      onClick={() => setShowAlertModal(true)}
+                    >
                       <Bell size={16} /> Set Price Alert
                     </button>
                   </div>
@@ -248,11 +277,18 @@ export default function TokenDetails() {
             {/* Buy/Sell panel */}
             <div className="bg-gray-900 rounded-lg p-6">
               <h2 className="text-xl font-bold mb-4 text-white">Buy / Sell</h2>
+              <input
+                type="number"
+                min="0"
+                step="0.0001"
+                placeholder="Amount"
+                className="border border-gray-700 bg-gray-800 text-white rounded px-4 py-2 w-full mb-4"
+              />
               <div className="flex flex-col gap-3">
-                <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded justify-center">
+                <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded justify-center w-full">
                   <ShoppingCart size={18} /> Buy
                 </button>
-                <button className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded justify-center">
+                <button className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded justify-center w-full">
                   <ArrowLeftRight size={18} /> Sell
                 </button>
               </div>
@@ -260,6 +296,76 @@ export default function TokenDetails() {
                 Trading functionality coming soon.
               </p>
             </div>
+            {/* Alerts List */}
+            {alerts.length > 0 && (
+              <div className="mb-4">
+                <div className="text-xs text-gray-500 mb-1">
+                  Active Price Alerts:
+                </div>
+                <ul className="text-sm text-white space-y-1">
+                  {alerts.map((price, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      <span>${price}</span>
+                      <button
+                        className="text-xs text-red-400 hover:underline"
+                        onClick={() => {
+                          const addr = String(id).toLowerCase();
+                          const updated = alerts.filter((p, idx) => idx !== i);
+                          localStorage.setItem(
+                            `bdv_alerts_${addr}`,
+                            JSON.stringify(updated)
+                          );
+                          setAlerts(updated);
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {/* Price Alert Modal */}
+            {showAlertModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div
+                  className="absolute inset-0 bg-black bg-opacity-60"
+                  onClick={() => setShowAlertModal(false)}
+                />
+                <div className="relative bg-gray-900 rounded-lg p-8 w-full max-w-xs z-10 shadow-xl border border-gray-700">
+                  <h2 className="text-lg font-bold mb-4 text-white">
+                    Set Price Alert
+                  </h2>
+                  <form onSubmit={addAlert} className="flex flex-col gap-4">
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0"
+                      className="border border-gray-700 bg-gray-800 text-white rounded px-4 py-2 w-full"
+                      placeholder="Target Price (USD)"
+                      value={alertPrice}
+                      onChange={(e) => setAlertPrice(e.target.value)}
+                      required
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex-1"
+                      >
+                        Set Alert
+                      </button>
+                      <button
+                        type="button"
+                        className="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded flex-1"
+                        onClick={() => setShowAlertModal(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Wallet, Plus, ArrowRightLeft, ShoppingCart, Send } from "lucide-react";
 import { useAccount, useWriteContract, useSwitchChain } from "wagmi";
+import { getCoinsMostValuable } from "@zoralabs/coins-sdk";
 
 const COVALENT_API_KEY = "ckey_demo"; // Replace with your Covalent API key for production
 const BASE_SEPOLIA_CHAIN_ID = 84532;
@@ -55,28 +56,15 @@ export default function Portfolio() {
 
   useEffect(() => {
     async function fetchPortfolio() {
-      if (!walletAddress) return;
       setLoading(true);
       setError(null);
       try {
-        // Fetch ERC20 balances from Covalent (Base Sepolia)
-        const res = await fetch(
-          `https://api.covalenthq.com/v1/${BASE_SEPOLIA_CHAIN_ID}/address/${walletAddress}/balances_v2/?key=${COVALENT_API_KEY}`
+        // Fetch tokens from Zora (like dashboard)
+        const response = await getCoinsMostValuable({ count: 100 });
+        const coinsData = response.data?.exploreList?.edges?.map(
+          (edge: any) => edge.node
         );
-        const data = await res.json();
-        const erc20s = (data.data?.items || []).filter(
-          (t: any) =>
-            t.type === "cryptocurrency" &&
-            t.contract_address !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-        );
-        setTokens(
-          erc20s.map((token: any) => ({
-            ...token,
-            symbol: token.contract_ticker_symbol,
-            name: token.contract_name,
-            balance: Number(token.balance) / 10 ** token.contract_decimals,
-          }))
-        );
+        setTokens(coinsData || []);
       } catch (err) {
         setError("Failed to fetch portfolio.");
         setTokens([]);
@@ -84,8 +72,8 @@ export default function Portfolio() {
         setLoading(false);
       }
     }
-    if (walletAddress) fetchPortfolio();
-  }, [walletAddress]);
+    fetchPortfolio();
+  }, []);
 
   async function handleTransfer(e: any) {
     e.preventDefault();
@@ -282,7 +270,7 @@ export default function Portfolio() {
                         {token.symbol}
                       </td>
                       <td className="px-4 py-3 text-gray-200">
-                        {token.balance}
+                        {token.balance ? token.balance.toFixed(4) : "N/A"}
                       </td>
                       <td className="px-4 py-3">
                         <button
